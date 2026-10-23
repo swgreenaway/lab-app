@@ -8,23 +8,10 @@
 </head>
 <body>
   <main>
-    <h1>IIS Lab App</h1>
-    <p class="muted">Static files served by IIS from the site root. API calls go to <code>/api</code>, a separate IIS application running ASP.NET Core.</p>
-
     <section>
       <h2>Hello</h2>
       <button id="hello-btn">GET /api/hello</button>
       <p id="hello-out" class="out"></p>
-    </section>
-
-    <section>
-      <h2>Notes</h2>
-      <p class="muted">Kept in memory, so they disappear when the app pool recycles.</p>
-      <form id="note-form">
-        <input id="note-text" placeholder="Write a note" autocomplete="off" required>
-        <button type="submit">POST /api/notes</button>
-      </form>
-      <ul id="notes"></ul>
     </section>
 
     <p id="error" class="error" hidden></p>

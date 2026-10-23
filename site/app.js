@@ -5,6 +5,7 @@ async function api(path, options) {
   return res;
 }
 
+// Helper function
 const $ = (id) => document.getElementById(id);
 
 function showError(err) {
@@ -16,14 +17,6 @@ function clearError() {
   $('error').hidden = true;
 }
 
-function renderNotes(notes) {
-  $('notes').replaceChildren(...notes.map((text) => {
-    const li = document.createElement('li');
-    li.textContent = text;
-    return li;
-  }));
-}
-
 $('hello-btn').addEventListener('click', async () => {
   clearError();
   try {
@@ -31,18 +24,4 @@ $('hello-btn').addEventListener('click', async () => {
   } catch (err) { showError(err); }
 });
 
-$('note-form').addEventListener('submit', async (e) => {
-  e.preventDefault();
-  clearError();
-  try {
-    const res = await api('notes', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ text: $('note-text').value }),
-    });
-    $('note-text').value = '';
-    renderNotes(await res.json());
-  } catch (err) { showError(err); }
-});
-
-api('notes').then((res) => res.json()).then(renderNotes).catch(showError);
+// api('notes').then((res) => res.json()).then(renderNotes).catch(showError);
