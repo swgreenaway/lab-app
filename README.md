@@ -9,13 +9,11 @@ A minimal app for practising IIS: a static HTML/CSS/JS page served directly by I
 
 | Endpoint | Description |
 |---|---|
-| `GET /api/hello` | Simple JSON response |
-| `GET /api/info` | What IIS hands the app: process name, path base, headers, client IP |
-| `GET /api/notes` | List notes |
-| `POST /api/notes` | Add a note: `{"text": "..."}` |
-| `DELETE /api/notes/{id}` | Delete a note |
+| `GET /api/hello` | Plain-text greeting |
+| `GET /api/notes` | List notes (JSON array of strings) |
+| `POST /api/notes` | Add a note: `{"text": "..."}`. Returns the updated list |
 
-Notes are kept in memory, so they are lost whenever the app pool recycles.
+Notes are kept in a plain in-memory list, so they are lost whenever the app pool recycles. It's deliberately minimal: no IDs, validation or thread safety.
 
 ## Requirements
 
@@ -37,7 +35,7 @@ Copy `site\*` and `publish\*` to two folders on the server, e.g. `C:\inetpub\Lab
 3. **Application:** right-click the site → *Add Application*. Alias **`api`** (the page calls `api/...`), physical path = the publish folder, app pool = the API pool.
 4. **Permissions:** give `IIS AppPool\<pool name>` Read & Execute on each folder (type the name; it won't show in search).
 
-**Check:** browse to `http://<server>/` and click *Server info*. You should see `"process": "w3wp"` (in-process hosting) and `"pathBase": "/api"`.
+**Check:** browse to `http://<server>/`, click *GET /api/hello*, and add a note. To confirm the API runs in-process, open IIS Manager → server node → *Worker Processes*: the API's app pool should be listed with a `w3wp` process.
 
 ## Troubleshooting
 

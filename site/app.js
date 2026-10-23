@@ -1,9 +1,9 @@
 // Relative URLs, so the page works whatever host/port IIS is bound to
-const api = (path, options) =>
-  fetch(`api/${path}`, options).then(async (res) => {
-    if (!res.ok) throw new Error(`${options?.method ?? 'GET'} api/${path} -> ${res.status} ${res.statusText}`);
-    return res.status === 204 ? null : res.json();
-  });
+async function api(path, options) {
+  const res = await fetch(`api/${path}`, options);
+  if (!res.ok) throw new Error(`${options?.method ?? 'GET'} api/${path} -> ${res.status} ${res.statusText}`);
+  return res;
+}
 
 const $ = (id) => document.getElementById(id);
 
@@ -16,54 +16,33 @@ function clearError() {
   $('error').hidden = true;
 }
 
-$('hello-btn').addEventListener('click', async () => {
-  clearError();
-  try {
-    const data = await api('hello');
-    $('hello-out').textContent = `${data.message} (${new Date(data.time).toLocaleTimeString()})`;
-  } catch (err) { showError(err); }
-});
-
-$('info-btn').addEventListener('click', async () => {
-  clearError();
-  try {
-    $('info-out').textContent = JSON.stringify(await api('info'), null, 2);
-  } catch (err) { showError(err); }
-});
-
-async function loadNotes() {
-  const notes = await api('notes');
-  const list = $('notes');
-  list.replaceChildren(...notes.map((note) => {
+function renderNotes(notes) {
+  $('notes').replaceChildren(...notes.map((text) => {
     const li = document.createElement('li');
-    li.textContent = `${note.text} `;
-    const del = document.createElement('button');
-    del.className = 'link';
-    del.textContent = 'delete';
-    del.addEventListener('click', async () => {
-      clearError();
-      try {
-        await api(`notes/${note.id}`, { method: 'DELETE' });
-        await loadNotes();
-      } catch (err) { showError(err); }
-    });
-    li.append(del);
+    li.textContent = text;
     return li;
   }));
 }
+
+$('hello-btn').addEventListener('click', async () => {
+  clearError();
+  try {
+    $('hello-out').textContent = await (await api('hello')).text();
+  } catch (err) { showError(err); }
+});
 
 $('note-form').addEventListener('submit', async (e) => {
   e.preventDefault();
   clearError();
   try {
-    await api('notes', {
+    const res = await api('notes', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ text: $('note-text').value }),
     });
     $('note-text').value = '';
-    await loadNotes();
+    renderNotes(await res.json());
   } catch (err) { showError(err); }
 });
 
-loadNotes().catch(showError);
+api('notes').then((res) => res.json()).then(renderNotes).catch(showError);
