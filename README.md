@@ -17,16 +17,30 @@ Notes are kept in a plain in-memory list, so they are lost whenever the app pool
 
 ## Requirements
 
-- **Build machine:** .NET 10 SDK
-- **Server:** IIS, plus the [.NET 10 Hosting Bundle](https://aka.ms/dotnet/10.0/dotnet-hosting-win.exe). Run `iisreset` after installing it.
+- **Server:** IIS, plus the [.NET 10 Hosting Bundle](https://aka.ms/dotnet/10.0/dotnet-hosting-win.exe). Run `iisreset` after installing it. If the bundle was installed before IIS, run its installer again and choose *Repair*.
+- **Build machine:** none if you use the prebuilt package below; otherwise the .NET 10 SDK.
 
-## Build
+## Get the build
+
+GitHub Actions builds a ready-to-copy package containing two folders:
+
+```
+site/   static files  → the IIS site's physical path
+api/    published API → the /api application's physical path
+```
+
+- **Releases** (permanent): download `iis-lab-app.zip` from the repo's Releases page. Created when a `v*` tag is pushed (`git tag v1.0 && git push origin v1.0`).
+- **Actions artifact** (latest commit): Actions tab → latest *Build* run → *iis-lab-app*. Needs a GitHub login; kept 90 days.
+
+Copy the **contents** of each folder, so `index.html` sits directly in the site folder and `web.config` + `LabApi.dll` sit directly in the API folder, e.g. `C:\inetpub\LabApp` and `C:\inetpub\LabApp-api`.
+
+### Building it yourself
 
 ```powershell
 dotnet publish api -c Release -o publish
 ```
 
-Copy `site\*` and `publish\*` to two folders on the server, e.g. `C:\inetpub\LabApp` and `C:\inetpub\LabApp-api`. The source files (`*.cs`, `*.csproj`, `obj\`) aren't needed on the server.
+Then copy `site\*` and `publish\*` as above. The source files (`*.cs`, `*.csproj`, `obj\`) aren't needed on the server.
 
 ## IIS setup
 

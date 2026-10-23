@@ -1,0 +1,42 @@
+name: Build
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: write # needed to create releases on tag pushes
+
+jobs:
+  build:
+    # Windows runner so the output matches a local Windows publish (LabApi.exe, web.config)
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Publish API
+        run: dotnet publish api -c Release -o out/api
+
+      - name: Add static site
+        run: Copy-Item site -Destination out/site -Recurse
+
+      # Artifact on every run (needs a GitHub login to download, kept 90 days)
+      - uses: actions/upload-artifact@v4
+        with:
+          name: iis-lab-app
+          path: out/
+
+      # Permanent download on version tags: git tag v1.0 && git push origin v1.0
+      - name: Create release
+        if: startsWith(github.ref, 'refs/tags/v')
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          Compress-Archive -Path out/* -DestinationPath iis-lab-app.zip
+          gh release create ${{ github.ref_name }} iis-lab-app.zip --title ${{ github.ref_name }} --generate-notes
